@@ -3,3 +3,14 @@ mypy
 pre-commit
 pylint
 black
+sqlalchemy
+fastapi
+uvicorn
+pydantic
+types-python-jose
+types-passlib
+python-jose[cryptography]
+passlib[bycrypt]
+python-multipart
+starlette==0.27.0
+jose

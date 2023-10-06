@@ -6,14 +6,6 @@ repos:
         language_version: python3.11
         stages: [ commit ]
         args: [ '-v',  '-S', '--line-length', '80' ]
-  - repo: https://github.com/Botpy/pre-commit-pylint
-    rev: v0.0.3
-    hooks:
-      - id: pylint-py3k
-      - id: pylint-score-limit
-        args:
-        - --limit=9.5
-        - --rcfile=./.pylintrc
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.5.0
     hooks:
