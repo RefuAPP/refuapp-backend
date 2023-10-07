@@ -10,13 +10,17 @@ from starlette import status
 from models.users import Users
 from services.security import verify_password
 
-SECRET_KEY = ("fnefthANWsJzOeitxbVhcxfmYdKZMGNY4ieclwBuTl7Mvp1qhwSEKjFB7pOX7X7iaAnS67")
+SECRET_KEY = (
+    "fnefthANWsJzOeitxbVhcxfmYdKZMGNY4ieclwBuTl7Mvp1qhwSEKjFB7pOX7X7iaAnS67"
+)
 ALGORITHM = "HS256"
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/login/user")
 
 
-def create_user_access_token(phone_number: str, user_id: int, expires_delta: timedelta):
+def create_user_access_token(
+    phone_number: str, user_id: int, expires_delta: timedelta
+):
     encode = {'sub': phone_number, 'id': user_id}
     expires = datetime.utcnow() + expires_delta
     encode.update({'exp': expires})
@@ -24,10 +28,10 @@ def create_user_access_token(phone_number: str, user_id: int, expires_delta: tim
 
 
 def authenticate_user(phone_number: str, password: str, db: Session):
-    user = db.query(Users).filter(Users.phone_number == phone_number).first()
+    user = db.query(Users).filter_by(phone_number=phone_number).first()
     if not user:
         raise HTTPException(status_code=404, detail='User not found')
-    if not verify_password(password, user.password):
+    if not verify_password(password, str(user.password)):
         raise HTTPException(status_code=401, detail='Incorrect password')
     return user
 
@@ -38,10 +42,16 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         phone_number: Optional[str] = payload.get('sub')
         user_id: Optional[int] = payload.get('id')
         if phone_number is None or user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user', )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Could not validate user',
+            )
         return {'phone_number': phone_number, 'id': user_id}
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user', )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Could not validate user',
+        )
 
 
 user_logged_in_dependency = Annotated[dict, Depends(get_current_user)]
