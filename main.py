@@ -4,11 +4,14 @@ from starlette import status
 import models
 from models.database import engine, db_dependency
 from routers import auth, users
+from models.database import engine
+from routers import auth, users, refuges
 from services.auth import user_logged_in_dependency
 
 app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(refuges.router)
 
 models.database.Base.metadata.create_all(engine)
 
