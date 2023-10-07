@@ -19,10 +19,10 @@ def create_user(
     save_user(new_user, db)
 
     return CreateUserResponse(
-        id=str(new_user.id),
-        username=str(new_user.username),
-        phone_number=str(new_user.phone_number),
-        emergency_number=str(new_user.emergency_number),
+        id=new_user.id,
+        username=new_user.username,
+        phone_number=new_user.phone_number,
+        emergency_number=new_user.emergency_number,
     )
 
 
