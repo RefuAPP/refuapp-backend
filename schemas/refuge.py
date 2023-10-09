@@ -68,7 +68,7 @@ class CreateRefugeResponse(Refuge):
 
 
 class GetRefugeResponse(Refuge):
-    pass
+    id: str
 
 
 class UpdateRefugeRequest(CreateRefugeRequest):

@@ -9,6 +9,7 @@ from schemas.refuge import (
     Coordinates,
     Capacity,
     CreateRefugeResponse,
+    GetRefugeResponse,
 )
 
 
@@ -49,5 +50,27 @@ def create_refuge(
     )
 
 
-def find_by_name(name: str, db: Session) -> Optional[Refuge]:
+def get_refuge(refuge: Refuges) -> GetRefugeResponse:
+    return GetRefugeResponse(
+        id=refuge.id,
+        name=refuge.name,
+        image=refuge.image,
+        region=refuge.region,
+        altitude=refuge.altitude,
+        coordinates=Coordinates(
+            latitude=refuge.coordinates_latitude,
+            longitude=refuge.coordinates_longitude,
+        ),
+        capacity=Capacity(
+            winter=refuge.capacity_winter,
+            summer=refuge.capacity_summer,
+        ),
+    )
+
+
+def find_by_name(name: str, db: Session) -> Optional[Refuges]:
     return db.query(Refuges).filter_by(name=name).first()
+
+
+def find_by_id(refuge_id: str, db: Session) -> Optional[Refuges]:
+    return db.query(Refuges).filter_by(id=refuge_id).first()

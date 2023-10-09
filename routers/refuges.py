@@ -2,9 +2,13 @@ from fastapi import APIRouter, HTTPException
 from starlette import status
 
 from models.database import db_dependency
-from schemas.errors import CONFLICT_RESPONSE
-from schemas.refuge import CreateRefugeRequest, CreateRefugeResponse
-from services.refuges import create_refuge, find_by_name
+from schemas.errors import CONFLICT_RESPONSE, NOT_FOUND_RESPONSE
+from schemas.refuge import (
+    CreateRefugeRequest,
+    CreateRefugeResponse,
+    GetRefugeResponse,
+)
+from services.refuges import create_refuge, find_by_name, find_by_id, get_refuge
 
 router = APIRouter(
     prefix="/refuges",
@@ -18,7 +22,7 @@ router = APIRouter(
     response_model=CreateRefugeResponse,
     responses={**CONFLICT_RESPONSE},
 )
-def create_refuge_endpoint(
+def create_refuge_route(
     create_refuge_request: CreateRefugeRequest, db: db_dependency
 ) -> CreateRefugeResponse:
     if find_by_name(create_refuge_request.name, db) is not None:
@@ -27,3 +31,19 @@ def create_refuge_endpoint(
             detail=f"Refuge with name {create_refuge_request.name} already exists",
         )
     return create_refuge(create_refuge_request, db)
+
+
+@router.get(
+    "/{refuge_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=GetRefugeResponse,
+    responses={**NOT_FOUND_RESPONSE},
+)
+def get_refuge_route(refuge_id: str, db: db_dependency) -> GetRefugeResponse:
+    refuge = find_by_id(refuge_id, db)
+    if not refuge:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Refuge with id {refuge_id} not found in the database",
+        )
+    return get_refuge(refuge)
