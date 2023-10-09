@@ -1,9 +1,11 @@
+from typing import Optional, Any
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from models.users import Users
 from schemas.user import CreateUserRequest, CreateUserResponse
-from services.security import get_password_hash
+from security.security import get_password_hash
 
 
 def create_user(
@@ -34,3 +36,7 @@ def save_user(user: Users, db: Session):
 
     db.add(user)
     db.commit()
+
+
+def get_user_from_id(user_id: str, db: Session) -> Optional[Users]:
+    return db.query(Users).filter_by(id=user_id).first()

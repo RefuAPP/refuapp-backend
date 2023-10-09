@@ -1,33 +1,24 @@
-from datetime import timedelta, datetime
-from typing import Annotated, Optional
+from datetime import timedelta
+from typing import Annotated, Dict
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from starlette import status
 
 from models.users import Users
-from services.security import verify_password
-
-SECRET_KEY = (
-    "fnefthANWsJzOeitxbVhcxfmYdKZMGNY4ieclwBuTl7Mvp1qhwSEKjFB7pOX7X7iaAnS67"
-)
-ALGORITHM = "HS256"
+from security.security import verify_password
+from security.token import get_token, get_user_id_for
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/login/user")
 
 
-def create_user_access_token(
-    phone_number: str, user_id: int, expires_delta: timedelta
-):
-    encode = {'sub': phone_number, 'id': user_id}
-    expires = datetime.utcnow() + expires_delta
-    encode.update({'exp': expires})
-    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+def get_token_for(user: Users) -> Dict[str, str]:
+    token = get_token(user, timedelta(minutes=20))
+    return {"access_token": token, "token_type": "bearer"}
 
 
-def authenticate_user(phone_number: str, password: str, db: Session):
+def get_user_with(phone_number: str, password: str, db: Session):
     user = db.query(Users).filter_by(phone_number=phone_number).first()
     if not user:
         raise HTTPException(status_code=404, detail='User not found')
@@ -36,22 +27,13 @@ def authenticate_user(phone_number: str, password: str, db: Session):
     return user
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        phone_number: Optional[str] = payload.get('sub')
-        user_id: Optional[int] = payload.get('id')
-        if phone_number is None or user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Could not validate user',
-            )
-        return {'phone_number': phone_number, 'id': user_id}
-    except JWTError:
+def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
+    if (user_id := get_user_id_for(token)) is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate user',
         )
+    return user_id
 
 
-user_logged_in_dependency = Annotated[dict, Depends(get_current_user)]
+get_user_id_from_token = Annotated[str, Depends(get_current_user)]

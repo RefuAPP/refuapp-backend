@@ -6,13 +6,18 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from models.database import db_dependency
 from schemas.auth import Token
-from services.auth import create_user_access_token, authenticate_user
+from services.auth import get_token_for, get_user_with
 
-router = APIRouter(prefix="/login", tags=["login"], )
+router = APIRouter(
+    prefix="/login",
+    tags=["login"],
+)
 
 
 @router.post("/user", response_model=Token)
-async def login_user_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user(form_data.username, form_data.password, db)
-    token = create_user_access_token(user.phone_number, user.id, timedelta(minutes=20))
-    return {"access_token": token, "token_type": "bearer"}
+async def login_user_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: db_dependency,
+):
+    user = get_user_with(form_data.username, form_data.password, db)
+    return get_token_for(user)
