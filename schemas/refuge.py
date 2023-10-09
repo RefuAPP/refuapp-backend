@@ -21,7 +21,7 @@ class Capacity(BaseModel):
     )
 
 
-class CreateRefugeRequest(BaseModel):
+class Refuge(BaseModel):
     name: str = Field(
         min_length=1,
         max_length=100,
@@ -57,7 +57,11 @@ class CreateRefugeRequest(BaseModel):
         return validators.validate_region(region)
 
 
-class Refuge(CreateRefugeRequest):
+class CreateRefugeRequest(Refuge):
+    pass
+
+
+class CreateRefugeResponse(Refuge):
     id: int
 
 
