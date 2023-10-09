@@ -1,40 +1,42 @@
-from pydantic import BaseModel, field_validator
+import uuid
 
-from validators.user import (
-    phone_number_is_exactly_9_digits,
-    username_is_not_empty,
-    password_is_valid,
-)
+from pydantic import BaseModel, Field, field_validator
+
+from validators.user import password_is_valid
 
 
-class CreateUserRequest(BaseModel):
-    username: str
-    password: str
-    phone_number: str
-    emergency_number: str
+class User(BaseModel):
+    username: str = Field(
+        min_length=1,
+        max_length=20,
+        description='Username must be between 1 and 20 characters',
+        examples=['username'],
+    )
+    phone_number: str = Field(
+        pattern='^[0-9]{9}$',
+        description='Phone number must be exactly 9 digits',
+    )
+    emergency_number: str = Field(
+        pattern='^[0-9]{9}$',
+        description='Phone number must be exactly 9 digits',
+    )
 
-    class Config:
-        from_atributes = True
 
-    @field_validator('phone_number')
-    def phone_number_is_exactly_9_digits(cls, v):
-        return phone_number_is_exactly_9_digits(v)
-
-    @field_validator('emergency_number')
-    def emergency_number_is_exactly_9_digits(cls, v):
-        return phone_number_is_exactly_9_digits(v)
-
-    @field_validator('username')
-    def username_is_not_empty(cls, v):
-        return username_is_not_empty(v)
+class CreateUserRequest(User):
+    password: str = Field(
+        max_length=100,
+        description='At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character',
+        examples=['Changeme123!'],
+    )
 
     @field_validator('password')
-    def password_is_valid(cls, v):
-        return password_is_valid(v)
+    def validate_password(cls, password: str):
+        return password_is_valid(password)
 
 
-class CreateUserResponse(BaseModel):
-    id: str
-    username: str
-    phone_number: str
-    emergency_number: str
+class CreateUserResponse(User):
+    id: str = Field(
+        pattern='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
+        examples=['123e4567-e89b-12d3-a456-426614174000'],
+        description='UUID v4',
+    )

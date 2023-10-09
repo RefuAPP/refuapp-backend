@@ -1,6 +1,5 @@
-from typing import Optional, Any
+from typing import Optional
 
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from models.users import Users
@@ -18,7 +17,9 @@ def create_user(
         emergency_number=create_user_request.emergency_number,
     )
 
-    save_user(new_user, db)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
 
     return CreateUserResponse(
         id=new_user.id,
@@ -28,15 +29,9 @@ def create_user(
     )
 
 
-def save_user(user: Users, db: Session):
-    if db.query(Users).filter_by(phone_number=user.phone_number).first():
-        raise HTTPException(
-            status_code=409, detail='Phone number already exists'
-        )
-
-    db.add(user)
-    db.commit()
-
-
 def get_user_from_id(user_id: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(id=user_id).first()
+
+
+def get_user_by_phone_number(phone_number: str, db: Session) -> Optional[Users]:
+    return db.query(Users).filter_by(phone_number=phone_number).first()
