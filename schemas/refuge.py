@@ -1,0 +1,73 @@
+from pydantic import BaseModel, field_validator, Field
+
+import validators.refuges as validators
+
+
+class Coordinates(BaseModel):
+    latitude: float = Field(
+        ge=-90, le=90, description='Latitude must be between -90 and 90'
+    )
+    longitude: float = Field(
+        ge=-180, le=180, description='Longitude must be between -180 and 180'
+    )
+
+
+class Capacity(BaseModel):
+    winter: int = Field(
+        ge=0, description='Winter capacity must be a positive integer'
+    )
+    summer: int = Field(
+        ge=0, description='Summer capacity must be a positive integer'
+    )
+
+
+class CreateRefugeRequest(BaseModel):
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        description='Name must be between 1 and 100 characters',
+        examples=['Refugi de la Restanca', 'Besiberri'],
+    )
+    region: str = Field(
+        min_length=1,
+        max_length=100,
+        description='Region must be between 1 and 100 characters',
+        examples=['Vielha', 'Benasque'],
+    )
+    image: str = Field(
+        min_length=1,
+        max_length=100,
+        description='Image must be between 1 and 100 characters',
+    )
+    altitude: int = Field(
+        ge=0, description='Altitude must be a positive integer'
+    )
+    coordinates: Coordinates
+    capacity: Capacity
+
+    class Config:
+        from_attributes = True
+
+    @field_validator('name', check_fields=True)
+    def validate_name(cls, name: str):
+        return validators.validate_name(name)
+
+    @field_validator('region', check_fields=True)
+    def validate_region(cls, region: str):
+        return validators.validate_region(region)
+
+
+class Refuge(CreateRefugeRequest):
+    id: int
+
+
+class GetRefugeResponse(Refuge):
+    pass
+
+
+class UpdateRefugeRequest(CreateRefugeRequest):
+    pass
+
+
+class UpdateRefugeResponse(Refuge):
+    pass

@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Session
+
 from models.refuges import Refuges
-from schemas.refuges.capacity import Capacity
-from schemas.refuges.coordinates import Coordinates
-from schemas.refuges.create_refuge_request import CreateRefugeRequest
-from schemas.refuges.create_refuge_response import CreateRefugeResponse
+from schemas.refuge import Refuge, CreateRefugeRequest, Coordinates, Capacity
 
 
-async def create_refuge(
+# TODO: If we have the same name, send a custom http error, not a 500
+# TODO: Check for admin rights, only admin can create refuges
+def create_refuge(
     create_refuge_request: CreateRefugeRequest, db: Session
-):
+) -> Refuge:
     new_refuge = Refuges(
         name=create_refuge_request.name,
         image=create_refuge_request.image,
@@ -24,7 +24,7 @@ async def create_refuge(
     db.commit()
     db.refresh(new_refuge)
 
-    return CreateRefugeResponse(
+    return Refuge(
         id=new_refuge.id,
         name=new_refuge.name,
         image=new_refuge.image,
