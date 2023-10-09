@@ -71,9 +71,9 @@ class GetRefugeResponse(Refuge):
     id: str
 
 
-class UpdateRefugeRequest(CreateRefugeRequest):
+class UpdateRefugeRequest(Refuge):
     pass
 
 
 class UpdateRefugeResponse(Refuge):
-    pass
+    id: str

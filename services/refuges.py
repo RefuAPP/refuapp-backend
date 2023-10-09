@@ -9,6 +9,8 @@ from schemas.refuge import (
     Capacity,
     CreateRefugeResponse,
     GetRefugeResponse,
+    UpdateRefugeResponse,
+    UpdateRefugeRequest,
 )
 
 
@@ -51,6 +53,38 @@ def create_refuge(
 
 def get_refuge(refuge: Refuges) -> GetRefugeResponse:
     return GetRefugeResponse(
+        id=refuge.id,
+        name=refuge.name,
+        image=refuge.image,
+        region=refuge.region,
+        altitude=refuge.altitude,
+        coordinates=Coordinates(
+            latitude=refuge.coordinates_latitude,
+            longitude=refuge.coordinates_longitude,
+        ),
+        capacity=Capacity(
+            winter=refuge.capacity_winter,
+            summer=refuge.capacity_summer,
+        ),
+    )
+
+
+def update_refuge(
+    refuge: Refuges, request: UpdateRefugeRequest, db: Session
+) -> UpdateRefugeResponse:
+    setattr(refuge, 'name', request.name)
+    setattr(refuge, 'image', request.image)
+    setattr(refuge, 'region', request.region)
+    setattr(refuge, 'altitude', request.altitude)
+    setattr(refuge, 'coordinates_latitude', request.coordinates.latitude)
+    setattr(refuge, 'coordinates_longitude', request.coordinates.longitude)
+    setattr(refuge, 'capacity_winter', request.capacity.winter)
+    setattr(refuge, 'capacity_summer', request.capacity.summer)
+
+    db.commit()
+    db.refresh(refuge)
+
+    return UpdateRefugeResponse(
         id=refuge.id,
         name=refuge.name,
         image=refuge.image,
