@@ -50,3 +50,7 @@ class UpdateUserRequest(CreateUserRequest):
 
 class UpdateUserResponse(CreateUserResponse):
     pass
+
+
+class DeleteUserResponse(CreateUserResponse):
+    pass

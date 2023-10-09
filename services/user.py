@@ -9,6 +9,7 @@ from schemas.user import (
     UpdateUserRequest,
     UpdateUserResponse,
     GetUserResponse,
+    DeleteUserResponse,
 )
 from security.security import get_password_hash
 
@@ -56,6 +57,18 @@ def update_user(
     db.refresh(user)
 
     return UpdateUserResponse(
+        id=user.id,
+        username=user.username,
+        phone_number=user.phone_number,
+        emergency_number=user.emergency_number,
+    )
+
+
+def delete_user(user: Users, db: Session) -> DeleteUserResponse:
+    db.delete(user)
+    db.commit()
+
+    return DeleteUserResponse(
         id=user.id,
         username=user.username,
         phone_number=user.phone_number,
