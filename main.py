@@ -1,11 +1,11 @@
-from typing import Optional, Any
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from starlette import status
 
 import models
-from models.database import engine, db_dependency
 from models.database import engine
+from models.database import engine, db_dependency
 from models.users import Users
 from routers import auth, users, refuges
 from services.auth import get_user_id_from_token

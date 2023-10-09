@@ -12,8 +12,8 @@ from schemas.refuge import (
 )
 
 
-# TODO: If we have the same name, send a custom http error, not a 500
 # TODO: Check for admin rights, only admin can create refuges
+# TODO: Check for authentication
 def create_refuge(
     create_refuge_request: CreateRefugeRequest, db: Session
 ) -> CreateRefugeResponse:
@@ -49,5 +49,5 @@ def create_refuge(
     )
 
 
-def find_by_name(name: str) -> Optional[Refuge]:
-    return Refuges.query.filter_by(name=name).first()
+def find_by_name(name: str, db: Session) -> Optional[Refuge]:
+    return db.query(Refuges).filter_by(name=name).first()
