@@ -1,6 +1,7 @@
 import configparser
 from abc import ABC, abstractmethod
 from typing import Optional, Type
+import os
 
 
 class ConfigurationOption(ABC):
@@ -22,7 +23,7 @@ class Configuration:
 
     @staticmethod
     def __instantiate__():
-        Configuration.CONFIG = configparser.ConfigParser()
+        Configuration.CONFIG = configparser.ConfigParser(os.environ)
         Configuration.CONFIG.read(Configuration.CONFIGURATION_FILE)
 
     @staticmethod
