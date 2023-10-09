@@ -42,3 +42,11 @@ class CreateUserResponse(User):
 
 class GetUserResponse(CreateUserResponse):
     pass
+
+
+class UpdateUserRequest(CreateUserRequest):
+    pass
+
+
+class UpdateUserResponse(CreateUserResponse):
+    pass

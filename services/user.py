@@ -3,7 +3,13 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from models.users import Users
-from schemas.user import CreateUserRequest, CreateUserResponse
+from schemas.user import (
+    CreateUserRequest,
+    CreateUserResponse,
+    UpdateUserRequest,
+    UpdateUserResponse,
+    GetUserResponse,
+)
 from security.security import get_password_hash
 
 
@@ -29,8 +35,27 @@ def create_user(
     )
 
 
-def get_user(user: Users) -> CreateUserResponse:
-    return CreateUserResponse(
+def get_user(user: Users) -> GetUserResponse:
+    return GetUserResponse(
+        id=user.id,
+        username=user.username,
+        phone_number=user.phone_number,
+        emergency_number=user.emergency_number,
+    )
+
+
+def update_user(
+    user: Users, request: UpdateUserRequest, db: Session
+) -> UpdateUserResponse:
+    setattr(user, 'username', request.username)
+    setattr(user, 'phone_number', request.phone_number)
+    setattr(user, 'emergency_number', request.emergency_number)
+    setattr(user, 'password', get_password_hash(request.password))
+
+    db.commit()
+    db.refresh(user)
+
+    return UpdateUserResponse(
         id=user.id,
         username=user.username,
         phone_number=user.phone_number,
