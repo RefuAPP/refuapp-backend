@@ -77,3 +77,7 @@ class UpdateRefugeRequest(Refuge):
 
 class UpdateRefugeResponse(Refuge):
     id: str
+
+
+class DeleteRefugeResponse(Refuge):
+    id: str

@@ -11,6 +11,7 @@ from schemas.refuge import (
     GetRefugeResponse,
     UpdateRefugeResponse,
     UpdateRefugeRequest,
+    DeleteRefugeResponse,
 )
 
 
@@ -69,6 +70,10 @@ def get_refuge(refuge: Refuges) -> GetRefugeResponse:
     )
 
 
+def get_all(db: Session) -> list[GetRefugeResponse]:
+    return [get_refuge(refuge) for refuge in find_all(db)]
+
+
 def update_refuge(
     refuge: Refuges, request: UpdateRefugeRequest, db: Session
 ) -> UpdateRefugeResponse:
@@ -101,8 +106,25 @@ def update_refuge(
     )
 
 
-def get_all(db: Session) -> list[GetRefugeResponse]:
-    return [get_refuge(refuge) for refuge in find_all(db)]
+def delete_refuge(refuge: Refuges, db: Session) -> DeleteRefugeResponse:
+    db.delete(refuge)
+    db.commit()
+
+    return DeleteRefugeResponse(
+        id=refuge.id,
+        name=refuge.name,
+        image=refuge.image,
+        region=refuge.region,
+        altitude=refuge.altitude,
+        coordinates=Coordinates(
+            latitude=refuge.coordinates_latitude,
+            longitude=refuge.coordinates_longitude,
+        ),
+        capacity=Capacity(
+            winter=refuge.capacity_winter,
+            summer=refuge.capacity_summer,
+        ),
+    )
 
 
 def find_by_name(name: str, db: Session) -> Optional[Refuges]:

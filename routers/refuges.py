@@ -9,6 +9,7 @@ from schemas.refuge import (
     GetRefugeResponse,
     UpdateRefugeResponse,
     UpdateRefugeRequest,
+    DeleteRefugeResponse,
 )
 from services.refuges import (
     create_refuge,
@@ -17,6 +18,7 @@ from services.refuges import (
     get_refuge,
     get_all,
     update_refuge,
+    delete_refuge,
 )
 
 router = APIRouter(
@@ -93,3 +95,21 @@ def update_refuge_route(
         )
 
     return update_refuge(refuge, update_refuge_request, db)
+
+
+@router.delete(
+    "/{refuge_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=DeleteRefugeResponse,
+    responses={**NOT_FOUND_RESPONSE},
+)
+def delete_refuge_route(
+    refuge_id: str, db: db_dependency
+) -> DeleteRefugeResponse:
+    refuge = find_by_id(refuge_id, db)
+    if not refuge:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Refuge with id {refuge_id} not found in the database",
+        )
+    return delete_refuge(refuge, db)
