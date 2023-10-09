@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from starlette import status
+from fastapi.staticfiles import StaticFiles
 
 import models
 from models.database import engine
@@ -15,6 +16,8 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(refuges.router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 models.database.Base.metadata.create_all(engine)
 
