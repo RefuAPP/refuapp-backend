@@ -8,7 +8,13 @@ from schemas.refuge import (
     CreateRefugeResponse,
     GetRefugeResponse,
 )
-from services.refuges import create_refuge, find_by_name, find_by_id, get_refuge
+from services.refuges import (
+    create_refuge,
+    find_by_name,
+    find_by_id,
+    get_refuge,
+    get_all,
+)
 
 router = APIRouter(
     prefix="/refuges",
@@ -47,3 +53,12 @@ def get_refuge_route(refuge_id: str, db: db_dependency) -> GetRefugeResponse:
             detail=f"Refuge with id {refuge_id} not found in the database",
         )
     return get_refuge(refuge)
+
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_model=list[GetRefugeResponse],
+)
+def get_refuges_route(db: db_dependency) -> list[GetRefugeResponse]:
+    return get_all(db)

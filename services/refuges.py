@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from models.refuges import Refuges
 from schemas.refuge import (
-    Refuge,
     CreateRefugeRequest,
     Coordinates,
     Capacity,
@@ -68,9 +67,17 @@ def get_refuge(refuge: Refuges) -> GetRefugeResponse:
     )
 
 
+def get_all(db: Session) -> list[GetRefugeResponse]:
+    return [get_refuge(refuge) for refuge in find_all(db)]
+
+
 def find_by_name(name: str, db: Session) -> Optional[Refuges]:
     return db.query(Refuges).filter_by(name=name).first()
 
 
 def find_by_id(refuge_id: str, db: Session) -> Optional[Refuges]:
     return db.query(Refuges).filter_by(id=refuge_id).first()
+
+
+def find_all(db: Session) -> list[Refuges]:
+    return db.query(Refuges).all()
