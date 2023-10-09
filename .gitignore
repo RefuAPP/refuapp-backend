@@ -163,3 +163,8 @@ cython_debug/
 
 # Ignore dummy SQL Lite DB
 sql_app.db
+
+static/*
+static/images/*
+static/images/refuges/*
+!static/images/refuges/no-photo.png

@@ -5,6 +5,6 @@ def validate_name(name: str) -> str:
 
 
 def validate_region(region: str) -> str:
-    if not region.istitle():
+    if not region[0].istitle():
         raise ValueError('region must be capitalized')
     return region
