@@ -1,14 +1,22 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from models.refuges import Refuges
-from schemas.refuge import Refuge, CreateRefugeRequest, Coordinates, Capacity
+from schemas.refuge import (
+    Refuge,
+    CreateRefugeRequest,
+    Coordinates,
+    Capacity,
+    CreateRefugeResponse,
+)
 
 
 # TODO: If we have the same name, send a custom http error, not a 500
 # TODO: Check for admin rights, only admin can create refuges
 def create_refuge(
     create_refuge_request: CreateRefugeRequest, db: Session
-) -> Refuge:
+) -> CreateRefugeResponse:
     new_refuge = Refuges(
         name=create_refuge_request.name,
         image=create_refuge_request.image,
@@ -24,7 +32,7 @@ def create_refuge(
     db.commit()
     db.refresh(new_refuge)
 
-    return Refuge(
+    return CreateRefugeResponse(
         id=new_refuge.id,
         name=new_refuge.name,
         image=new_refuge.image,
@@ -39,3 +47,7 @@ def create_refuge(
             summer=new_refuge.capacity_summer,
         ),
     )
+
+
+def find_by_name(name: str) -> Optional[Refuge]:
+    return Refuges.query.filter_by(name=name).first()
