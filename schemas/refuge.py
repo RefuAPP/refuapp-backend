@@ -40,7 +40,7 @@ class Refuge(BaseModel):
         description='Image must be between 1 and 100 characters',
     )
     altitude: int = Field(
-        ge=0, description='Altitude must be a positive integer'
+        gt=0, description='Altitude must be a positive integer'
     )
     coordinates: Coordinates
     capacity: Capacity
