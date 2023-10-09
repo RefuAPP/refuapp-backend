@@ -1,10 +1,24 @@
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 from starlette import status
 
 from models.database import db_dependency
-from schemas.errors import CONFLICT_RESPONSE
-from schemas.user import CreateUserRequest, CreateUserResponse
-from services.user import create_user, get_user_by_phone_number
+from models.users import Users
+from schemas.errors import (
+    CONFLICT_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    FORBIDDEN_RESPONSE,
+)
+from schemas.user import CreateUserRequest, CreateUserResponse, GetUserResponse
+from services.auth import get_user_id_from_token
+from services.user import (
+    create_user,
+    get_user_by_phone_number,
+    get_user_from_id,
+    get_user,
+)
 
 router = APIRouter(
     prefix="/users",
@@ -30,3 +44,34 @@ async def create_user_route(
             detail="User with this phone number already exists",
         )
     return create_user(create_user_request, db)
+
+
+@router.get(
+    "/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=GetUserResponse,
+    responses={
+        **NOT_FOUND_RESPONSE,
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+    },
+)
+async def get_user_route(
+    user_id: str, logged_user_id: get_user_id_from_token, db: db_dependency
+):
+    if logged_user_id is None:
+        raise HTTPException(status_code=401, detail='You are not logged in')
+    if logged_user_id != user_id:
+        raise HTTPException(
+            status_code=403,
+            detail='You are not allowed to access this resource',
+        )
+
+    user: Optional[Users] = get_user_from_id(user_id, db)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with this id does not exist",
+        )
+    return get_user(user)

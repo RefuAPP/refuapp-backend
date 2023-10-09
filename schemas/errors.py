@@ -10,5 +10,13 @@ CONFLICT_RESPONSE = {
 }
 
 NOT_FOUND_RESPONSE = {
-    404: {"description": "Error: Conflict", "model": DetailResponseBody}
+    404: {"description": "Error: Not Found", "model": DetailResponseBody}
+}
+
+UNAUTHORIZED_RESPONSE = {
+    401: {"description": "Error: Unauthorized", "model": DetailResponseBody}
+}
+
+FORBIDDEN_RESPONSE = {
+    403: {"description": "Error: Forbidden", "model": DetailResponseBody}
 }

@@ -29,6 +29,15 @@ def create_user(
     )
 
 
+def get_user(user: Users) -> CreateUserResponse:
+    return CreateUserResponse(
+        id=user.id,
+        username=user.username,
+        phone_number=user.phone_number,
+        emergency_number=user.emergency_number,
+    )
+
+
 def get_user_from_id(user_id: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(id=user_id).first()
 
