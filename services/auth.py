@@ -34,6 +34,14 @@ def get_token_for_admin(admin: Admins) -> Token:
     return Token(access_token=token, token_type="bearer")
 
 
+def get_token_for_supervisor(supervisor: Admins) -> Token:
+    token = get_token(
+        TokenData(id=supervisor.id, scopes=['supervisor']),
+        timedelta(minutes=20),
+    )
+    return Token(access_token=token, token_type="bearer")
+
+
 def get_id_from_token(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
     if (data := get_data_for(token)) is None:
         raise HTTPException(
@@ -63,9 +71,24 @@ def get_current_admin(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
     return admin_token.id
 
 
+def get_current_supervisor(
+    token: Annotated[str, Depends(oauth2_bearer)]
+) -> str:
+    supervisor_token = get_data_for(token)
+    if supervisor_token is None or 'supervisor' not in supervisor_token.scopes:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Privilege error (can\'t access the ' 'resource',
+        )
+    return supervisor_token.id
+
+
 get_user_id_from_token = Annotated[
     str, Security(get_current_user, scopes=["user"])
 ]
 get_admin_id_from_token = Annotated[
     str, Security(get_current_admin, scopes=["admin"])
+]
+get_supervisor_id_from_token = Annotated[
+    str, Security(get_current_supervisor, scopes=["supervisor"])
 ]

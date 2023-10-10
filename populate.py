@@ -8,6 +8,7 @@ from requests.exceptions import ConnectionError
 
 from models.admins import Admins
 from models.database import get_db
+from models.supervisors import Supervisors
 from schemas.refuge import CreateRefugeRequest, Coordinates, Capacity
 from security.security import get_password_hash
 from services.refuges import create_refuge
@@ -232,3 +233,15 @@ def create_admins():
         db.add(admin)
         db.commit()
         db.refresh(admin)
+
+
+def create_supervisors():
+    db = next(get_db())
+    if db.query(Supervisors).filter_by(username='supervisor').first() is None:
+        supervisor = Supervisors(
+            username='supervisor',
+            password=get_password_hash('supervisor'),
+        )
+        db.add(supervisor)
+        db.commit()
+        db.refresh(supervisor)

@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from models.admins import Admins
+from models.supervisors import Supervisors
 from models.users import Users
 from schemas.user import (
     CreateUserRequest,
@@ -86,6 +87,10 @@ def get_admin_from_id(admin_id: str, db: Session) -> Optional[Admins]:
     return db.query(Admins).filter_by(id=admin_id).first()
 
 
+def get_supervisor_from_id(supervisor_id: str, db: Session) -> Optional[Admins]:
+    return db.query(Supervisors).filter_by(id=supervisor_id).first()
+
+
 def get_user_by_phone_number(phone_number: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(phone_number=phone_number).first()
 
@@ -106,3 +111,12 @@ def get_admin_with(username: str, password: str, db: Session):
     if not verify_password(password, str(admin.password)):
         raise HTTPException(status_code=401, detail='Incorrect password')
     return admin
+
+
+def get_supervisor_with(username: str, password: str, db: Session):
+    supervisor = db.query(Supervisors).filter_by(username=username).first()
+    if not supervisor:
+        raise HTTPException(status_code=404, detail='Supervisor not found')
+    if not verify_password(password, str(supervisor.password)):
+        raise HTTPException(status_code=401, detail='Incorrect password')
+    return supervisor
