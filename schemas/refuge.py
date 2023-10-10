@@ -38,6 +38,7 @@ class Refuge(BaseModel):
         min_length=1,
         max_length=100,
         description='Image must be between 1 and 100 characters',
+        default='no-photo.png',
     )
     altitude: int = Field(
         gt=0,

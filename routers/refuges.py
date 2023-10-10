@@ -20,6 +20,7 @@ from services.refuges import (
     update_refuge,
     delete_refuge,
 )
+from services.images import image_in_files
 
 router = APIRouter(
     prefix="/refuges",
@@ -31,7 +32,7 @@ router = APIRouter(
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=CreateRefugeResponse,
-    responses={**CONFLICT_RESPONSE},
+    responses={**CONFLICT_RESPONSE, **NOT_FOUND_RESPONSE},
 )
 def create_refuge_route(
     create_refuge_request: CreateRefugeRequest, db: db_dependency
@@ -41,6 +42,12 @@ def create_refuge_route(
             status_code=409,
             detail=f"Refuge with name {create_refuge_request.name} already exists",
         )
+    if not image_in_files(create_refuge_request.image):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Image with name {create_refuge_request.image} not found in the server",
+        )
+
     return create_refuge(create_refuge_request, db)
 
 
