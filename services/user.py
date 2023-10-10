@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from models.admins import Admins
 from models.users import Users
 from schemas.user import (
     CreateUserRequest,
@@ -81,6 +82,10 @@ def get_user_from_id(user_id: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(id=user_id).first()
 
 
+def get_admin_from_id(admin_id: str, db: Session) -> Optional[Admins]:
+    return db.query(Admins).filter_by(id=admin_id).first()
+
+
 def get_user_by_phone_number(phone_number: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(phone_number=phone_number).first()
 
@@ -93,3 +98,11 @@ def get_user_with(phone_number: str, password: str, db: Session):
         raise HTTPException(status_code=401, detail='Incorrect password')
     return user
 
+
+def get_admin_with(username: str, password: str, db: Session):
+    admin = db.query(Admins).filter_by(username=username).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail='Admin not found')
+    if not verify_password(password, str(admin.password)):
+        raise HTTPException(status_code=401, detail='Incorrect password')
+    return admin

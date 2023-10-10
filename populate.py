@@ -4,11 +4,13 @@ import geojson
 import requests
 from PIL import Image
 from geojson import Feature
+from requests.exceptions import ConnectionError
 
+from models.admins import Admins
 from models.database import get_db
 from schemas.refuge import CreateRefugeRequest, Coordinates, Capacity
+from security.security import get_password_hash
 from services.refuges import create_refuge
-from requests.exceptions import ConnectionError
 
 LONGITUDE_INDEX = 0
 LATITUDE_INDEX = 1
@@ -181,9 +183,6 @@ class CreateRefugeRequestBuilder:
             )
 
 
-db = next(get_db())
-
-
 def build_refuge_request(refuge_json: Feature) -> CreateRefugeRequest:
     properties = refuge_json[PROPERTIES]
     coordinates = refuge_json[GEOMETRY][COORDINATES]
@@ -203,16 +202,33 @@ def build_refuge_request(refuge_json: Feature) -> CreateRefugeRequest:
     return refuge_request_builder.build()
 
 
-with open('refuges.geojson') as f:
-    gj = geojson.load(f)
-    features = gj['features']
-    errors = 0
-    print(f"[INFO]: {len(features)} refuges found")
-    for refuge in features:
-        try:
-            refuge_request = build_refuge_request(refuge)
-            create_refuge(refuge_request, db)
-        except InvalidRequest as e:
-            errors += 1
-            print(f"[INFO]: {e}")
-    print(f"[INFO]: {len(features) - errors} refuges created, {errors} errors")
+if __name__ == '__main__':
+    db = next(get_db())
+
+    with open('refuges.geojson') as f:
+        gj = geojson.load(f)
+        features = gj['features']
+        errors = 0
+        print(f"[INFO]: {len(features)} refuges found")
+        for refuge in features:
+            try:
+                refuge_request = build_refuge_request(refuge)
+                create_refuge(refuge_request, db)
+            except InvalidRequest as e:
+                errors += 1
+                print(f"[INFO]: {e}")
+        print(
+            f"[INFO]: {len(features) - errors} refuges created, {errors} errors"
+        )
+
+
+def create_admins():
+    db = next(get_db())
+    if db.query(Admins).filter_by(username='admin').first() is None:
+        admin = Admins(
+            username='admin',
+            password=get_password_hash('admin'),
+        )
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)

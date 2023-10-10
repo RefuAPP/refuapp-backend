@@ -21,10 +21,10 @@ def get_token(data: TokenData, expires: timedelta) -> str:
 def get_data_for(token: str) -> TokenData | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: Optional[str] = payload.get('id')
+        identifier: Optional[str] = payload.get('id')
         scopes: Optional[list[str]] = payload.get('scopes')
-        if user_id is None or scopes is None:
+        if identifier is None or scopes is None:
             return None
-        return TokenData(id=user_id, scopes=scopes)
+        return TokenData(id=identifier, scopes=scopes)
     except JWTError:
         return None

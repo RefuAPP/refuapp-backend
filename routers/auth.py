@@ -5,8 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from models.database import db_dependency
 from schemas.auth import Token
-from services.auth import get_token_for_user
-from services.user import get_user_with
+from services.auth import get_token_for_user, get_token_for_admin
+from services.user import get_user_with, get_admin_with
 
 router = APIRouter(
     prefix="/login",
@@ -27,7 +27,8 @@ async def login_user_for_access_token(
         user = get_user_with(form_data.username, form_data.password, db)
         return get_token_for_user(user)
     if 'admin' in form_data.scopes:
-        raise HTTPException(status_code=401, detail="To implement")
+        admin = get_admin_with(form_data.username, form_data.password, db)
+        return get_token_for_admin(admin)
     if 'supervisor' in form_data.scopes:
         raise HTTPException(status_code=401, detail="To implement")
     raise HTTPException(status_code=401, detail="Illegal scope argument")
