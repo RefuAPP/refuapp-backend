@@ -2,7 +2,10 @@ from sqlalchemy.orm import Session
 
 import schemas
 from models.reservation import Reservation
-from schemas.reservation import CreateReservationResponse
+from schemas.reservation import (
+    CreateReservationResponse,
+    Reservations,
+)
 
 
 def save_reservation(
@@ -27,4 +30,17 @@ def save_reservation(
             month=new_reservation.month,
             year=new_reservation.year,
         ),
+    )
+
+
+def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
+    return list(
+        map(
+            lambda res: str(res.id),
+            (
+                session.query(Reservation)
+                .filter(Reservation.user_id == user_id)
+                .all()
+            ),
+        )
     )

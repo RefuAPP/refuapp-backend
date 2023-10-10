@@ -23,5 +23,8 @@ class Reservation(BaseModel):
     night: Date
 
 
+Reservations = list[str]
+
+
 class CreateReservationResponse(Reservation):
     id: str
