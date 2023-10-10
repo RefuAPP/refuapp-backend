@@ -10,8 +10,9 @@ from models.database import engine
 from models.database import engine, db_dependency
 from models.supervisors import Supervisors
 from models.users import Users
+
 from populate import create_admins, create_supervisors
-from routers import auth, users, refuges
+from routers import auth, users, refuges, reservation
 from services.auth import (
     get_user_id_from_token,
     get_admin_id_from_token,
@@ -27,6 +28,7 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(refuges.router)
+app.include_router(reservation.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

@@ -5,6 +5,7 @@ from models.reservation import Reservation
 from schemas.reservation import (
     CreateReservationResponse,
     Reservations,
+    Date,
 )
 
 
@@ -40,6 +41,26 @@ def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
             (
                 session.query(Reservation)
                 .filter(Reservation.user_id == user_id)
+                .all()
+            ),
+        )
+    )
+
+
+def get_reservations_for_refuge_and_date(
+    refuge_id: str, date: Date, session: Session
+) -> Reservations:
+    return list(
+        map(
+            lambda res: str(res.id),
+            (
+                session.query(Reservation)
+                .filter(
+                    Reservation.refuge_id == refuge_id
+                    and Reservation.day == date.day
+                    and Reservation.month == date.month
+                    and Reservation.year == date.year
+                )
                 .all()
             ),
         )
