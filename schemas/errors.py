@@ -20,3 +20,7 @@ UNAUTHORIZED_RESPONSE = {
 FORBIDDEN_RESPONSE = {
     403: {"description": "Error: Forbidden", "model": DetailResponseBody}
 }
+
+INVALID_REQUEST = {
+    400: {"description": "Error: Invalid Request", "model": DetailResponseBody}
+}
