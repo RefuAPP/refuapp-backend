@@ -19,7 +19,11 @@ from schemas.user import (
     UpdateUserRequest,
     DeleteUserResponse,
 )
-from services.auth import get_user_id_from_token
+from services.auth import (
+    get_user_id_from_token,
+    get_roles_from_token,
+    get_token_data_from_token,
+)
 from services.user import (
     create_user,
     get_user_by_phone_number,
@@ -67,11 +71,9 @@ def create_user_route(
     },
 )
 def get_user_route(
-    user_id: str, logged_user_id: get_user_id_from_token, db: db_dependency
+    user_id: str, token_data: get_token_data_from_token, db: db_dependency
 ) -> GetUserResponse:
-    if logged_user_id is None:
-        raise HTTPException(status_code=401, detail='You are not logged in')
-    if logged_user_id != user_id:
+    if token_data.id != user_id and 'supervisor' not in token_data.scopes:
         raise HTTPException(
             status_code=403,
             detail='You are not allowed to access this resource',

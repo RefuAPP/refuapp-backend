@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
@@ -51,36 +51,52 @@ def get_id_from_token(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
     return data.id
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
+def get_current_user(
+    token: Annotated[str, Depends(oauth2_bearer)]
+) -> str | None:
     user_token = get_data_for(token)
     if user_token is None or 'user' not in user_token.scopes:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Privilege error (can\'t access the ' 'resource',
-        )
+        return None
     return user_token.id
 
 
-def get_current_admin(token: Annotated[str, Depends(oauth2_bearer)]) -> str:
+def get_current_admin(
+    token: Annotated[str, Depends(oauth2_bearer)]
+) -> str | None:
     admin_token = get_data_for(token)
     if admin_token is None or 'admin' not in admin_token.scopes:
+        return None
+    return admin_token.id
+
+
+def get_token_data(token: Annotated[str, Depends(oauth2_bearer)]) -> TokenData:
+    if (data := get_data_for(token)) is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Privilege error (can\'t access the ' 'resource',
+            detail='You are not logged in',
         )
-    return admin_token.id
+    return data
 
 
 def get_current_supervisor(
     token: Annotated[str, Depends(oauth2_bearer)]
-) -> str:
+) -> str | None:
     supervisor_token = get_data_for(token)
     if supervisor_token is None or 'supervisor' not in supervisor_token.scopes:
+        return None
+    return supervisor_token.id
+
+
+def get_roles_from_token(
+    token: Annotated[str, Depends(oauth2_bearer)]
+) -> List[str]:
+    data = get_data_for(token)
+    if data is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Privilege error (can\'t access the ' 'resource',
         )
-    return supervisor_token.id
+    return data.scopes
 
 
 get_user_id_from_token = Annotated[
@@ -91,4 +107,7 @@ get_admin_id_from_token = Annotated[
 ]
 get_supervisor_id_from_token = Annotated[
     str, Security(get_current_supervisor, scopes=["supervisor"])
+]
+get_token_data_from_token = Annotated[
+    TokenData, Security(get_token_data, scopes=["user", "admin", "supervisor"])
 ]
