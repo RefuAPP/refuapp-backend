@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from models.users import Users
@@ -11,7 +12,7 @@ from schemas.user import (
     GetUserResponse,
     DeleteUserResponse,
 )
-from security.security import get_password_hash
+from security.security import get_password_hash, verify_password
 
 
 def create_user(
@@ -82,3 +83,13 @@ def get_user_from_id(user_id: str, db: Session) -> Optional[Users]:
 
 def get_user_by_phone_number(phone_number: str, db: Session) -> Optional[Users]:
     return db.query(Users).filter_by(phone_number=phone_number).first()
+
+
+def get_user_with(phone_number: str, password: str, db: Session):
+    user = db.query(Users).filter_by(phone_number=phone_number).first()
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    if not verify_password(password, str(user.password)):
+        raise HTTPException(status_code=401, detail='Incorrect password')
+    return user
+

@@ -5,23 +5,26 @@ from jose import jwt, JWTError
 
 from configuration.auth import SecretKeyToken, Algorithm
 from configuration.config import Configuration
-from models.users import Users
+from schemas.auth import TokenData
 
 SECRET_KEY = Configuration.get(SecretKeyToken)
 ALGORITHM = Configuration.get(Algorithm)
 
 
-def get_token(user: Users, expires: timedelta) -> str:
-    encode = {'sub': user.phone_number, 'id': user.id}
+def get_token(data: TokenData, expires: timedelta) -> str:
+    encode = dict(data)
     expires = datetime.utcnow() + expires  # type: ignore
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_user_id_for(token: str) -> str | None:
+def get_data_for(token: str) -> TokenData | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: Optional[str] = payload.get('id')
-        return user_id
+        scopes: Optional[list[str]] = payload.get('scopes')
+        if user_id is None or scopes is None:
+            return None
+        return TokenData(id=user_id, scopes=scopes)
     except JWTError:
         return None
