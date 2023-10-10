@@ -1,8 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Security
 from starlette import status
 
 from models.database import db_dependency
-from schemas.errors import CONFLICT_RESPONSE, NOT_FOUND_RESPONSE
+from schemas.auth import TokenData
+from schemas.errors import (
+    CONFLICT_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    FORBIDDEN_RESPONSE,
+)
 from schemas.refuge import (
     CreateRefugeRequest,
     CreateRefugeResponse,
@@ -11,6 +19,7 @@ from schemas.refuge import (
     UpdateRefugeRequest,
     DeleteRefugeResponse,
 )
+from services.auth import get_token_data
 from services.refuges import (
     create_refuge,
     find_by_name,
@@ -27,16 +36,36 @@ router = APIRouter(
     tags=["refuges"],
 )
 
+get_token_data_for_create_refuge = Annotated[
+    TokenData, Security(get_token_data, scopes=["admin"])
+]
+
+get_token_data_for_update_refuge = get_token_data_for_create_refuge
+
+get_token_data_for_delete_refuge = get_token_data_for_create_refuge
+
 
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=CreateRefugeResponse,
-    responses={**CONFLICT_RESPONSE, **NOT_FOUND_RESPONSE},
+    responses={
+        **CONFLICT_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+    },
 )
 def create_refuge_route(
-    create_refuge_request: CreateRefugeRequest, db: db_dependency
+    create_refuge_request: CreateRefugeRequest,
+    token_data: get_token_data_for_create_refuge,
+    db: db_dependency,
 ) -> CreateRefugeResponse:
+    if 'admin' not in token_data.scopes:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to create a refuge",
+        )
     if find_by_name(create_refuge_request.name, db) is not None:
         raise HTTPException(
             status_code=409,
@@ -80,13 +109,24 @@ def get_refuges_route(db: db_dependency) -> list[GetRefugeResponse]:
     "/{refuge_id}",
     status_code=status.HTTP_200_OK,
     response_model=UpdateRefugeResponse,
-    responses={**NOT_FOUND_RESPONSE, **CONFLICT_RESPONSE},
+    responses={
+        **NOT_FOUND_RESPONSE,
+        **CONFLICT_RESPONSE,
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+    },
 )
 def update_refuge_route(
     refuge_id: str,
     update_refuge_request: UpdateRefugeRequest,
+    token_data: get_token_data_for_update_refuge,
     db: db_dependency,
 ) -> UpdateRefugeResponse:
+    if 'admin' not in token_data.scopes:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to update a refuge",
+        )
     refuge = find_by_id(refuge_id, db)
     if not refuge:
         raise HTTPException(
@@ -113,11 +153,22 @@ def update_refuge_route(
     "/{refuge_id}",
     status_code=status.HTTP_200_OK,
     response_model=DeleteRefugeResponse,
-    responses={**NOT_FOUND_RESPONSE},
+    responses={
+        **NOT_FOUND_RESPONSE,
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+    },
 )
 def delete_refuge_route(
-    refuge_id: str, db: db_dependency
+    refuge_id: str,
+    token_data: get_token_data_for_delete_refuge,
+    db: db_dependency,
 ) -> DeleteRefugeResponse:
+    if 'admin' not in token_data.scopes:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete a refuge",
+        )
     refuge = find_by_id(refuge_id, db)
     if not refuge:
         raise HTTPException(
