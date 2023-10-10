@@ -93,6 +93,11 @@ def update_refuge_route(
             status_code=404,
             detail=f"Refuge with id {refuge_id} not found in the database",
         )
+    if not image_in_files(update_refuge_request.image):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Image with name {update_refuge_request.image} not found in the server",
+        )
 
     refuge_by_name = find_by_name(update_refuge_request.name, db)
     if refuge_by_name is not None and refuge_by_name.id != refuge_id:

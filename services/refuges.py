@@ -2,6 +2,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from configuration.config import Configuration
+from configuration.image import DefaultImage
 from models.refuges import Refuges
 from schemas.refuge import (
     CreateRefugeRequest,
@@ -13,6 +15,7 @@ from schemas.refuge import (
     UpdateRefugeRequest,
     DeleteRefugeResponse,
 )
+from services.images import delete_image
 
 
 # TODO: Check for admin rights, only admin can create refuges
@@ -77,6 +80,9 @@ def get_all(db: Session) -> list[GetRefugeResponse]:
 def update_refuge(
     refuge: Refuges, request: UpdateRefugeRequest, db: Session
 ) -> UpdateRefugeResponse:
+    if refuge.image != Configuration.get(DefaultImage):
+        delete_image(str(refuge.image))
+
     setattr(refuge, 'name', request.name)
     setattr(refuge, 'image', request.image)
     setattr(refuge, 'region', request.region)
@@ -107,6 +113,9 @@ def update_refuge(
 
 
 def delete_refuge(refuge: Refuges, db: Session) -> DeleteRefugeResponse:
+    if refuge.image != Configuration.get(DefaultImage):
+        delete_image(str(refuge.image))
+
     db.delete(refuge)
     db.commit()
 
