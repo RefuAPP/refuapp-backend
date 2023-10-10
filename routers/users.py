@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Security
 from starlette import status
 
 from models.database import db_dependency
 from models.users import Users
+from schemas.auth import TokenData
 from schemas.errors import (
     CONFLICT_RESPONSE,
     NOT_FOUND_RESPONSE,
@@ -21,8 +22,7 @@ from schemas.user import (
 )
 from services.auth import (
     get_user_id_from_token,
-    get_roles_from_token,
-    get_token_data_from_token,
+    get_token_data,
 )
 from services.user import (
     create_user,
@@ -60,6 +60,11 @@ def create_user_route(
     return create_user(create_user_request, db)
 
 
+get_token_data_for_get_user = Annotated[
+    TokenData, Security(get_token_data, scopes=["user", "supervisor"])
+]
+
+
 @router.get(
     "/{user_id}",
     status_code=status.HTTP_200_OK,
@@ -71,7 +76,7 @@ def create_user_route(
     },
 )
 def get_user_route(
-    user_id: str, token_data: get_token_data_from_token, db: db_dependency
+    user_id: str, token_data: get_token_data_for_get_user, db: db_dependency
 ) -> GetUserResponse:
     if token_data.id != user_id and 'supervisor' not in token_data.scopes:
         raise HTTPException(

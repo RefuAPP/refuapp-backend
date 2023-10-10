@@ -108,6 +108,3 @@ get_admin_id_from_token = Annotated[
 get_supervisor_id_from_token = Annotated[
     str, Security(get_current_supervisor, scopes=["supervisor"])
 ]
-get_token_data_from_token = Annotated[
-    TokenData, Security(get_token_data, scopes=["user", "admin", "supervisor"])
-]
