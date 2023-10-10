@@ -1,6 +1,8 @@
 from pydantic import BaseModel, field_validator, Field
 
 import validators.refuges as validators
+from configuration.config import Configuration
+from configuration.image import DefaultImage
 
 
 class Coordinates(BaseModel):
@@ -38,7 +40,7 @@ class Refuge(BaseModel):
         min_length=1,
         max_length=100,
         description='Image must be between 1 and 100 characters',
-        default='no-photo.png',
+        default=f'{Configuration.get(DefaultImage)}',
     )
     altitude: int = Field(
         gt=0,
