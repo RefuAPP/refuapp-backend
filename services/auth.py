@@ -87,18 +87,6 @@ def get_current_supervisor(
     return supervisor_token.id
 
 
-def get_roles_from_token(
-    token: Annotated[str, Depends(oauth2_bearer)]
-) -> List[str]:
-    data = get_data_for(token)
-    if data is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Privilege error (can\'t access the ' 'resource',
-        )
-    return data.scopes
-
-
 get_user_id_from_token = Annotated[
     str, Security(get_current_user, scopes=["user"])
 ]
