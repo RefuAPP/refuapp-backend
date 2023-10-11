@@ -10,6 +10,7 @@ from schemas.reservation import (
     Reservation,
     Date,
     Reservations,
+    DeleteReservationResponse,
 )
 from services.auth import (
     get_user_id_from_token,
@@ -25,6 +26,7 @@ from services.reservation import (
     get_current_time,
     get_reservation_from_id,
     get_reservations_by_refuge_and_user,
+    remove_reservation,
 )
 from services.user import get_user_from_id, get_supervisor_from_id
 
@@ -181,4 +183,39 @@ def get_reservations_for_refuge_and_user(
         raise HTTPException(status_code=404, detail='Refuge not found')
     return get_reservations_by_refuge_and_user(
         refuge_id=refuge_id, user_id=user_id, session=session
+    )
+
+
+@router.delete(
+    "/reservations/:reservation_id",
+    status_code=status.HTTP_200_OK,
+    response_model=DeleteReservationResponse,
+)
+def delete_reservation(
+    reservation_id: str,
+    current_user_id: get_user_id_from_token,
+    session: db_dependency,
+) -> DeleteReservationResponse:
+    if current_user_id is None:
+        raise HTTPException(
+            status_code=401,
+            detail='You are not authenticated as a user',
+        )
+    if (
+        reservation := get_reservation_from_id(
+            reservation_id=reservation_id, session=session
+        )
+    ) is None:
+        raise HTTPException(status_code=404, detail='Reservation not found')
+    if current_user_id != reservation.user_id:
+        raise HTTPException(
+            status_code=403,
+            detail='You are not allowed to delete the reservations of another user',
+        )
+    remove_reservation(reservation_id, session)
+    return DeleteReservationResponse(
+        id=reservation_id,
+        refuge_id=reservation.refuge_id,
+        user_id=reservation.user_id,
+        night=reservation.night,
     )

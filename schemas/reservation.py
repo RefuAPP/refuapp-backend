@@ -28,3 +28,7 @@ Reservations = list[str]
 
 class CreateReservationResponse(Reservation):
     id: str
+
+
+class DeleteReservationResponse(CreateReservationResponse):
+    pass

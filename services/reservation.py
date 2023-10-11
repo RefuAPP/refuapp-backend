@@ -127,3 +127,8 @@ def get_current_time() -> datetime | None:
         return datetime.fromtimestamp(unix_time_es)
     except ntplib.NTPException:
         return None
+
+
+def remove_reservation(reservation_id: str, session: Session) -> None:
+    session.query(Reservation).filter(Reservation.id == reservation_id).delete()
+    session.commit()
