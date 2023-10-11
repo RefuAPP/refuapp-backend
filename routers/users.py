@@ -132,7 +132,7 @@ def update_user_route(
     return update_user(user, update_user_request, db)
 
 
-def check_target_user_is_logged_user(user_id: str, logged_user_id: str):
+def check_target_user_is_logged_user(user_id: str, logged_user_id: str | None):
     if logged_user_id is None:
         raise HTTPException(status_code=401, detail='You are not logged in')
     if logged_user_id != user_id:

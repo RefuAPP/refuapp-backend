@@ -88,11 +88,11 @@ def get_current_supervisor(
 
 
 get_user_id_from_token = Annotated[
-    str, Security(get_current_user, scopes=["user"])
+    str | None, Security(get_current_user, scopes=["user"])
 ]
 get_admin_id_from_token = Annotated[
-    str, Security(get_current_admin, scopes=["admin"])
+    str | None, Security(get_current_admin, scopes=["admin"])
 ]
 get_supervisor_id_from_token = Annotated[
-    str, Security(get_current_supervisor, scopes=["supervisor"])
+    str | None, Security(get_current_supervisor, scopes=["supervisor"])
 ]

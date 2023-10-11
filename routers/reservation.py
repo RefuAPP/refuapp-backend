@@ -142,9 +142,14 @@ def get_reservations_for_refuge_in_date(
     supervisor_id: get_supervisor_id_from_token,
     session: db_dependency,
 ) -> Reservations:
-    if find_by_id(refuge_id=refuge_id, db=session) is None:
-        raise HTTPException(status_code=404, detail='Refuge not found')
+    if supervisor_id is None:
+        raise HTTPException(
+            status_code=401,
+            detail='You are not authenticated as a supervisor',
+        )
     if get_supervisor_from_id(supervisor_id=supervisor_id, db=session) is None:
         raise HTTPException(status_code=403, detail='Supervisor is not in DB')
+    if find_by_id(refuge_id=refuge_id, db=session) is None:
+        raise HTTPException(status_code=404, detail='Refuge not found')
     date = Date(day=day, month=month, year=year)
     return get_reservations_for_refuge_and_date(refuge_id, date, session)
