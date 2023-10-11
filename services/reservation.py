@@ -37,6 +37,28 @@ def save_reservation(
     )
 
 
+def get_reservation_from_id(
+    reservation_id: str, session: Session
+) -> schemas.reservation.Reservation | None:
+    if (
+        reservation_with_id := (
+            session.query(Reservation)
+            .filter(Reservation.id == reservation_id)
+            .first()
+        )
+    ) is None:
+        return None
+    return schemas.reservation.Reservation(
+        user_id=reservation_with_id.user_id,
+        refuge_id=reservation_with_id.refuge_id,
+        night=schemas.reservation.Date(
+            day=reservation_with_id.day,
+            month=reservation_with_id.month,
+            year=reservation_with_id.year,
+        ),
+    )
+
+
 def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
     return list(
         map(
