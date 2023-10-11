@@ -203,7 +203,7 @@ def build_refuge_request(refuge_json: Feature) -> CreateRefugeRequest:
     return refuge_request_builder.build()
 
 
-if __name__ == '__main__':
+def populate_db_with_refuges():
     db = next(get_db())
 
     with open('refuges.geojson') as f:
@@ -245,3 +245,9 @@ def create_supervisors():
         db.add(supervisor)
         db.commit()
         db.refresh(supervisor)
+
+
+if __name__ == '__main__':
+    populate_db_with_refuges()
+    create_admins()
+    create_supervisors()

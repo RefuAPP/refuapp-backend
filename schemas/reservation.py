@@ -10,7 +10,7 @@ class Date(BaseModel):
     year: int = Field(ge=2023, examples=[2023, 2024, 2025, 2026])
 
     @model_validator(mode="after")
-    def asrt(self) -> 'Date':
+    def correct_date(self) -> 'Date':
         datetime.strptime(
             f"{self.day}/{self.month}/{self.year}", "%d/%m/%Y"
         ).date()

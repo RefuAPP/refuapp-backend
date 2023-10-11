@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import ntplib  # type: ignore
 from sqlalchemy.orm import Session
 
 import schemas
@@ -55,13 +58,34 @@ def get_reservations_for_refuge_and_date(
             lambda res: str(res.id),
             (
                 session.query(Reservation)
-                .filter(
-                    Reservation.refuge_id == refuge_id
-                    and Reservation.day == date.day
-                    and Reservation.month == date.month
-                    and Reservation.year == date.year
-                )
+                .filter(Reservation.refuge_id == refuge_id)
+                .filter(Reservation.day == date.day)
+                .filter(Reservation.month == date.month)
+                .filter(Reservation.year == date.year)
                 .all()
             ),
         )
     )
+
+
+def user_has_reservation_on_date(
+    user_id: str, night: Date, session: Session
+) -> bool:
+    return (
+        session.query(Reservation)
+        .filter(Reservation.user_id == user_id)
+        .filter(Reservation.day == night.day)
+        .filter(Reservation.month == night.month)
+        .filter(Reservation.year == night.year)
+        .first()
+        is not None
+    )
+
+
+def get_current_time() -> datetime | None:
+    try:
+        ntp_client = ntplib.NTPClient()
+        unix_time_es = ntp_client.request('es.pool.ntp.org').tx_time
+        return datetime.fromtimestamp(unix_time_es)
+    except ntplib.NTPException:
+        return None

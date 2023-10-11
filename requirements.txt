@@ -20,3 +20,4 @@ pillow
 types-Pillow
 types-requests
 requests
+ntplib
