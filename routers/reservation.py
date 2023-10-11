@@ -1,7 +1,5 @@
-from datetime import datetime
 from typing import Annotated
 
-import ntplib
 from fastapi import APIRouter, HTTPException, Security
 from starlette import status
 
@@ -26,6 +24,7 @@ from services.reservation import (
     user_has_reservation_on_date,
     get_current_time,
     get_reservation_from_id,
+    get_reservations_by_refuge_and_user,
 )
 from services.user import get_user_from_id, get_supervisor_from_id
 
@@ -153,3 +152,33 @@ def get_reservations_for_refuge_in_date(
         raise HTTPException(status_code=404, detail='Refuge not found')
     date = Date(day=day, month=month, year=year)
     return get_reservations_for_refuge_and_date(refuge_id, date, session)
+
+
+@router.get(
+    "/reservations/refuge/:refuge_id/user/:user_id",
+    status_code=status.HTTP_200_OK,
+    response_model=Reservations,
+)
+def get_reservations_for_refuge_and_user(
+    refuge_id: str,
+    user_id: str,
+    current_user_id: get_user_id_from_token,
+    session: db_dependency,
+) -> Reservations:
+    if current_user_id is None:
+        raise HTTPException(
+            status_code=401,
+            detail='You are not authenticated as a user',
+        )
+    if current_user_id != user_id:
+        raise HTTPException(
+            status_code=403,
+            detail='You are not allowed to get the reservations of another user',
+        )
+    if get_user_from_id(user_id=user_id, db=session) is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    if find_by_id(refuge_id=refuge_id, db=session) is None:
+        raise HTTPException(status_code=404, detail='Refuge not found')
+    return get_reservations_by_refuge_and_user(
+        refuge_id=refuge_id, user_id=user_id, session=session
+    )

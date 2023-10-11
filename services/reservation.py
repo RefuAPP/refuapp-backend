@@ -72,6 +72,22 @@ def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
     )
 
 
+def get_reservations_by_refuge_and_user(
+    refuge_id: str, user_id: str, session: Session
+) -> Reservations:
+    return list(
+        map(
+            lambda res: str(res.id),
+            (
+                session.query(Reservation)
+                .filter(Reservation.user_id == user_id)
+                .filter(Reservation.refuge_id == refuge_id)
+                .all()
+            ),
+        )
+    )
+
+
 def get_reservations_for_refuge_and_date(
     refuge_id: str, date: Date, session: Session
 ) -> Reservations:
