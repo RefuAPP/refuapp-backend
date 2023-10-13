@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
 import models
@@ -23,6 +24,16 @@ app.include_router(images.router)
 app.include_router(reservation.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 models.database.Base.metadata.create_all(engine)
 
