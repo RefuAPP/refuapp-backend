@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from models.database import db_dependency
 from schemas.auth import Token
+from schemas.errors import NOT_FOUND_RESPONSE, UNAUTHORIZED_RESPONSE
 from services.auth import (
     get_token_for_user,
     get_token_for_admin,
@@ -18,7 +19,14 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=Token)
+@router.post(
+    "/",
+    response_model=Token,
+    responses={
+        **NOT_FOUND_RESPONSE,
+        **UNAUTHORIZED_RESPONSE,
+    },
+)
 async def login_user_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: db_dependency,
