@@ -22,9 +22,9 @@ app.include_router(users.router)
 app.include_router(refuges.router)
 app.include_router(images.router)
 app.include_router(reservation.router)
+app.router.redirect_slashes = False
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 app.add_middleware(
     CORSMiddleware,
