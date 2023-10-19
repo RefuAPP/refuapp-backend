@@ -4,9 +4,9 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: refuapp
-      POSTGRES_USER: refuapp_user
-      POSTGRES_PASSWORD: refuapp_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
   refuapp-backend:
     build:
@@ -15,7 +15,12 @@ services:
     external_links:
       - postgres:docker-mysql
     environment:
-      DATABASE_URL: postgresql+psycopg2://refuapp_user:refuapp_password@docker-mysql:5432/refuapp
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: docker-mysql
+      JWT_KEY: ${JWT_KEY}
     depends_on:
       - postgres
     ports:
