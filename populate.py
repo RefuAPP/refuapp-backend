@@ -6,6 +6,9 @@ from PIL import Image
 from geojson import Feature
 from requests.exceptions import ConnectionError
 
+from configuration.admin import AdminName, AdminPassword
+from configuration.config import Configuration
+from configuration.supervisor import SupervisorName, SupervisorPassword
 from models.admins import Admins
 from models.database import get_db
 from models.supervisors import Supervisors
@@ -223,24 +226,31 @@ def populate_db_with_refuges():
         )
 
 
-def create_admins():
+def create_admin():
+    admin_username = Configuration.get(AdminName)
+    admin_password = Configuration.get(AdminPassword)
     db = next(get_db())
-    if db.query(Admins).filter_by(username='admin').first() is None:
+    if db.query(Admins).filter_by(username=admin_username).first() is None:
         admin = Admins(
-            username='admin',
-            password=get_password_hash('admin'),
+            username=admin_username,
+            password=get_password_hash(admin_password),
         )
         db.add(admin)
         db.commit()
         db.refresh(admin)
 
 
-def create_supervisors():
+def create_supervisor():
+    supervisor_name = Configuration.get(SupervisorName)
+    supervisor_password = Configuration.get(SupervisorPassword)
     db = next(get_db())
-    if db.query(Supervisors).filter_by(username='supervisor').first() is None:
+    if (
+        db.query(Supervisors).filter_by(username=supervisor_name).first()
+        is None
+    ):
         supervisor = Supervisors(
-            username='supervisor',
-            password=get_password_hash('supervisor'),
+            username=supervisor_name,
+            password=get_password_hash(supervisor_password),
         )
         db.add(supervisor)
         db.commit()
@@ -249,5 +259,5 @@ def create_supervisors():
 
 if __name__ == '__main__':
     populate_db_with_refuges()
-    create_admins()
-    create_supervisors()
+    create_admin()
+    create_supervisor()

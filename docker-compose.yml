@@ -21,6 +21,10 @@ services:
       DB_PORT: ${DB_PORT}
       DB_HOST: docker-mysql
       JWT_KEY: ${JWT_KEY}
+      ADMIN_NAME: ${ADMIN_NAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SUPERVISOR_NAME: ${SUPERVISOR_NAME}
+      SUPERVISOR_PASSWORD: ${SUPERVISOR_PASSWORD}
     depends_on:
       - postgres
     ports:

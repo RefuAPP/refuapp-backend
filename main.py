@@ -6,6 +6,7 @@ from starlette.responses import RedirectResponse
 import models
 from models.database import engine
 from models.database import engine
+from populate import create_admin, create_supervisor
 from routers import auth, users, refuges, reservation
 from routers import images
 
@@ -36,6 +37,8 @@ app.add_middleware(
 )
 
 models.database.Base.metadata.create_all(engine)
+create_admin()
+create_supervisor()
 
 
 @app.get("/")
