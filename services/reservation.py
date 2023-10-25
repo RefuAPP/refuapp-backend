@@ -2,6 +2,7 @@ from datetime import datetime
 
 import ntplib  # type: ignore
 from sqlalchemy.orm import Session
+from typing import List
 
 import schemas
 from models.reservation import Reservation
@@ -9,6 +10,7 @@ from schemas.reservation import (
     CreateReservationResponse,
     Reservations,
     Date,
+    ReservationWithId,
 )
 
 
@@ -60,30 +62,38 @@ def get_reservation_from_id(
 
 
 def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
-    return list(
-        map(
-            lambda res: str(res.id),
-            (
-                session.query(Reservation)
-                .filter(Reservation.user_id == user_id)
-                .all()
-            ),
-        )
+    reservations = (
+        session.query(Reservation).filter(Reservation.user_id == user_id).all()
     )
+    return convert_model_to_schema(reservations)
 
 
 def get_reservations_by_refuge_and_user(
     refuge_id: str, user_id: str, session: Session
 ) -> Reservations:
+    reservations = (
+        session.query(Reservation)
+        .filter(Reservation.user_id == user_id)
+        .filter(Reservation.refuge_id == refuge_id)
+        .all()
+    )
+    return convert_model_to_schema(reservations)
+
+
+def convert_model_to_schema(reservations: List[Reservation]) -> Reservations:
     return list(
         map(
-            lambda res: str(res.id),
-            (
-                session.query(Reservation)
-                .filter(Reservation.user_id == user_id)
-                .filter(Reservation.refuge_id == refuge_id)
-                .all()
+            lambda res: ReservationWithId(
+                id=res.id,
+                user_id=res.user_id,
+                refuge_id=res.refuge_id,
+                night=Date(
+                    day=res.day,
+                    month=res.month,
+                    year=res.year,
+                ),
             ),
+            reservations,
         )
     )
 
@@ -91,19 +101,15 @@ def get_reservations_by_refuge_and_user(
 def get_reservations_for_refuge_and_date(
     refuge_id: str, date: Date, session: Session
 ) -> Reservations:
-    return list(
-        map(
-            lambda res: str(res.id),
-            (
-                session.query(Reservation)
-                .filter(Reservation.refuge_id == refuge_id)
-                .filter(Reservation.day == date.day)
-                .filter(Reservation.month == date.month)
-                .filter(Reservation.year == date.year)
-                .all()
-            ),
-        )
+    reservations: List[Reservation] = (
+        session.query(Reservation)
+        .filter(Reservation.refuge_id == refuge_id)
+        .filter(Reservation.day == date.day)
+        .filter(Reservation.month == date.month)
+        .filter(Reservation.year == date.year)
+        .all()
     )
+    return convert_model_to_schema(reservations)
 
 
 def user_has_reservation_on_date(

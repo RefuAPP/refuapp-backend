@@ -5,6 +5,12 @@ from starlette import status
 
 from models.database import db_dependency
 from schemas.auth import TokenData
+from schemas.errors import (
+    NOT_FOUND_RESPONSE,
+    FORBIDDEN_RESPONSE,
+    INTERNAL_SERVER_ERROR,
+    UNAUTHORIZED_RESPONSE,
+)
 from schemas.reservation import (
     CreateReservationResponse,
     Reservation,
@@ -40,6 +46,12 @@ router = APIRouter(
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=CreateReservationResponse,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **INTERNAL_SERVER_ERROR,
+    },
 )
 def create_reservation(
     reservation: Reservation,
@@ -83,6 +95,11 @@ def create_reservation(
     "/{reservation_id}",
     status_code=status.HTTP_200_OK,
     response_model=Reservation,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+    },
 )
 def reservation_from_id(
     reservation_id: str,
@@ -116,6 +133,11 @@ def reservation_from_id(
     "/user/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=Reservations,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+    },
 )
 def get_reservations_for_user(
     user_id: str, logged_user_id: get_user_id_from_token, db: db_dependency
@@ -134,6 +156,11 @@ def get_reservations_for_user(
     "/refuge/{refuge_id}/year/{year}/month/{month}/day/{day}/",
     status_code=status.HTTP_200_OK,
     response_model=Reservations,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+    },
 )
 def get_reservations_for_refuge_in_date(
     refuge_id: str,
@@ -157,9 +184,14 @@ def get_reservations_for_refuge_in_date(
 
 
 @router.get(
-    "/reservations/refuge/:refuge_id/user/:user_id",
+    "/reservations/refuge/{refuge_id}/user/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=Reservations,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+    },
 )
 def get_reservations_for_refuge_and_user(
     refuge_id: str,
@@ -187,9 +219,14 @@ def get_reservations_for_refuge_and_user(
 
 
 @router.delete(
-    "/reservations/:reservation_id",
+    "/reservations/{reservation_id}",
     status_code=status.HTTP_200_OK,
     response_model=DeleteReservationResponse,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+    },
 )
 def delete_reservation(
     reservation_id: str,

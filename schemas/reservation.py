@@ -1,5 +1,6 @@
 from pydantic import BaseModel, model_validator, Field
 from datetime import datetime
+from typing import List
 
 
 class Date(BaseModel):
@@ -23,12 +24,16 @@ class Reservation(BaseModel):
     night: Date
 
 
-Reservations = list[str]
-
-
-class CreateReservationResponse(Reservation):
+class ReservationWithId(Reservation):
     id: str
 
 
-class DeleteReservationResponse(CreateReservationResponse):
+Reservations = List[ReservationWithId]
+
+
+class CreateReservationResponse(ReservationWithId):
+    pass
+
+
+class DeleteReservationResponse(ReservationWithId):
     pass

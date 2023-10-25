@@ -24,3 +24,10 @@ FORBIDDEN_RESPONSE = {
 INVALID_REQUEST = {
     400: {"description": "Error: Invalid Request", "model": DetailResponseBody}
 }
+
+INTERNAL_SERVER_ERROR = {
+    500: {
+        "description": "NTP server is probably failing",
+        "model": DetailResponseBody,
+    }
+}
