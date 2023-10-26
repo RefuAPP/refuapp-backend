@@ -22,7 +22,7 @@ oauth2_bearer = OAuth2PasswordBearer(
 
 def get_token_for_user(user: Users) -> Token:
     token = get_token(
-        TokenData(id=user.id, scopes=['user']), timedelta(minutes=20)
+        TokenData(id=user.id, scopes=['user']), timedelta(days=365)
     )
     return Token(access_token=token, token_type="bearer")
 
