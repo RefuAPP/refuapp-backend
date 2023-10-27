@@ -184,7 +184,7 @@ def get_reservations_for_refuge_in_date(
 
 
 @router.get(
-    "/reservations/refuge/{refuge_id}/user/{user_id}",
+    "/refuge/{refuge_id}/user/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=Reservations,
     responses={
@@ -219,7 +219,7 @@ def get_reservations_for_refuge_and_user(
 
 
 @router.delete(
-    "/reservations/{reservation_id}",
+    "/{reservation_id}",
     status_code=status.HTTP_200_OK,
     response_model=DeleteReservationResponse,
     responses={
