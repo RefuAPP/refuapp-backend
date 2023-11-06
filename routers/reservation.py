@@ -35,6 +35,7 @@ from services.reservation import (
     remove_reservation,
 )
 from services.user import get_user_from_id, get_supervisor_from_id
+from datetime import date
 
 router = APIRouter(
     prefix="/reservations",
@@ -74,16 +75,16 @@ def create_reservation(
             status_code=403,
             detail='User already has a reservation on this date',
         )
-    if (current_time := get_current_time()) is None:
+    if (current_date := get_current_time()) is None:
         raise HTTPException(
             status_code=500,
             detail='Error getting current time from ntp server, try again',
         )
-    if (
-        reservation.night.year < current_time.year
-        or reservation.night.month < current_time.month
-        or reservation.night.day < current_time.day
-    ):
+    night = reservation.night
+    reservation_date = date.fromisoformat(
+        f"{night.year}-{str(night.month).zfill(2)}-{str(night.day).zfill(2)}"
+    )
+    if reservation_date < current_date:
         raise HTTPException(
             status_code=403,
             detail='You cannot make a reservation for a past date',
@@ -179,8 +180,10 @@ def get_reservations_for_refuge_in_date(
         raise HTTPException(status_code=403, detail='Supervisor is not in DB')
     if find_by_id(refuge_id=refuge_id, db=session) is None:
         raise HTTPException(status_code=404, detail='Refuge not found')
-    date = Date(day=day, month=month, year=year)
-    return get_reservations_for_refuge_and_date(refuge_id, date, session)
+    reservation_day = Date(day=day, month=month, year=year)
+    return get_reservations_for_refuge_and_date(
+        refuge_id, reservation_day, session
+    )
 
 
 @router.get(
