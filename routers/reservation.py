@@ -84,7 +84,7 @@ def create_reservation(
     reservation_date = date.fromisoformat(
         f"{night.year}-{str(night.month).zfill(2)}-{str(night.day).zfill(2)}"
     )
-    if reservation_date < current_date:
+    if reservation_date < current_date.date():
         raise HTTPException(
             status_code=403,
             detail='You cannot make a reservation for a past date',
