@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer
@@ -29,7 +29,7 @@ def get_token_for_user(user: Users) -> Token:
 
 def get_token_for_admin(admin: Admins) -> Token:
     token = get_token(
-        TokenData(id=admin.id, scopes=['admin']), timedelta(minutes=20)
+        TokenData(id=admin.id, scopes=['admin']), timedelta(days=365)
     )
     return Token(access_token=token, token_type="bearer")
 
@@ -37,7 +37,7 @@ def get_token_for_admin(admin: Admins) -> Token:
 def get_token_for_supervisor(supervisor: Admins) -> Token:
     token = get_token(
         TokenData(id=supervisor.id, scopes=['supervisor']),
-        timedelta(minutes=20),
+        timedelta(days=365),
     )
     return Token(access_token=token, token_type="bearer")
 
