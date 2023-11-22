@@ -80,9 +80,6 @@ def get_all(db: Session) -> list[GetRefugeResponse]:
 def update_refuge(
     refuge: Refuges, request: UpdateRefugeRequest, db: Session
 ) -> UpdateRefugeResponse:
-    if refuge.image != Configuration.get(DefaultImage):
-        delete_image(str(refuge.image))
-
     setattr(refuge, 'name', request.name)
     setattr(refuge, 'image', request.image)
     setattr(refuge, 'region', request.region)
