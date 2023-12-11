@@ -16,7 +16,7 @@ from schemas.reservation import (
     Reservation,
     Date,
     Reservations,
-    DeleteReservationResponse,
+    DeleteReservationResponse, WeekReservations, DayReservations,
 )
 from services.auth import (
     get_user_id_from_token,
@@ -32,7 +32,7 @@ from services.reservation import (
     get_current_time,
     get_reservation_from_id,
     get_reservations_by_refuge_and_user,
-    remove_reservation,
+    remove_reservation, get_days_for_week,
 )
 from services.user import get_user_from_id, get_supervisor_from_id
 from datetime import date
@@ -55,9 +55,9 @@ router = APIRouter(
     },
 )
 def create_reservation(
-    reservation: Reservation,
-    user_id: get_user_id_from_token,
-    session: db_dependency,
+        reservation: Reservation,
+        user_id: get_user_id_from_token,
+        session: db_dependency,
 ) -> CreateReservationResponse:
     if user_id != reservation.user_id:
         raise HTTPException(
@@ -69,7 +69,7 @@ def create_reservation(
     if get_user_from_id(user_id=reservation.user_id, db=session) is None:
         raise HTTPException(status_code=404, detail='User not found')
     if user_has_reservation_on_date(
-        user_id=reservation.user_id, night=reservation.night, session=session
+            user_id=reservation.user_id, night=reservation.night, session=session
     ):
         raise HTTPException(
             status_code=403,
@@ -103,16 +103,16 @@ def create_reservation(
     },
 )
 def reservation_from_id(
-    reservation_id: str,
-    token_data: Annotated[
-        TokenData, Security(get_token_data, scopes=['user', 'supervisor'])
-    ],
-    db: db_dependency,
+        reservation_id: str,
+        token_data: Annotated[
+            TokenData, Security(get_token_data, scopes=['user', 'supervisor'])
+        ],
+        db: db_dependency,
 ) -> Reservation:
     if (
-        reservation := get_reservation_from_id(
-            reservation_id=reservation_id, session=db
-        )
+            reservation := get_reservation_from_id(
+                reservation_id=reservation_id, session=db
+            )
     ) is None:
         raise HTTPException(status_code=404, detail='Reservation not found')
     if 'user' in token_data.scopes and reservation.user_id != token_data.id:
@@ -121,8 +121,8 @@ def reservation_from_id(
             detail='You are not allowed to get a reservation of another user',
         )
     if (
-        'supervisor' in token_data.scopes
-        and get_supervisor_from_id(supervisor_id=token_data.id, db=db) is None
+            'supervisor' in token_data.scopes
+            and get_supervisor_from_id(supervisor_id=token_data.id, db=db) is None
     ):
         raise HTTPException(
             status_code=403, detail='Supervisor is not found in DB'
@@ -141,7 +141,7 @@ def reservation_from_id(
     },
 )
 def get_reservations_for_user(
-    user_id: str, logged_user_id: get_user_id_from_token, db: db_dependency
+        user_id: str, logged_user_id: get_user_id_from_token, db: db_dependency
 ) -> Reservations:
     if user_id != logged_user_id:
         raise HTTPException(
@@ -164,12 +164,12 @@ def get_reservations_for_user(
     },
 )
 def get_reservations_for_refuge_in_date(
-    refuge_id: str,
-    year: int,
-    month: int,
-    day: int,
-    supervisor_id: get_supervisor_id_from_token,
-    session: db_dependency,
+        refuge_id: str,
+        year: int,
+        month: int,
+        day: int,
+        supervisor_id: get_supervisor_id_from_token,
+        session: db_dependency,
 ) -> Reservations:
     if supervisor_id is None:
         raise HTTPException(
@@ -187,6 +187,43 @@ def get_reservations_for_refuge_in_date(
 
 
 @router.get(
+    "/refuge/{refuge_id}/week/{year}/month/{month}/day/{day}/",
+    status_code=status.HTTP_200_OK,
+    response_model=WeekReservations,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+    },
+)
+def get_reservations_for_refuge_in_week(
+        refuge_id: str,
+        year: int,
+        month: int,
+        day: int,
+        session: db_dependency,
+        offset: int
+) -> WeekReservations:
+    if find_by_id(refuge_id=refuge_id, db=session) is None:
+        raise HTTPException(status_code=404, detail='Refuge not found')
+    reservation_day = Date(day=day, month=month, year=year)
+    days = get_days_for_week(reservation_day, offset)
+    week_reservations_list: list[DayReservations] = []
+    for day in days:
+        week_reservations_list.append(
+            DayReservations(
+                date=day,
+                count=len(
+                    get_reservations_for_refuge_and_date(
+                        refuge_id, day, session
+                    )
+                )
+            )
+        )
+    return WeekReservations(reservations=week_reservations_list)
+
+
+@router.get(
     "/refuge/{refuge_id}/user/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=Reservations,
@@ -197,10 +234,10 @@ def get_reservations_for_refuge_in_date(
     },
 )
 def get_reservations_for_refuge_and_user(
-    refuge_id: str,
-    user_id: str,
-    current_user_id: get_user_id_from_token,
-    session: db_dependency,
+        refuge_id: str,
+        user_id: str,
+        current_user_id: get_user_id_from_token,
+        session: db_dependency,
 ) -> Reservations:
     if current_user_id is None:
         raise HTTPException(
@@ -232,9 +269,9 @@ def get_reservations_for_refuge_and_user(
     },
 )
 def delete_reservation(
-    reservation_id: str,
-    current_user_id: get_user_id_from_token,
-    session: db_dependency,
+        reservation_id: str,
+        current_user_id: get_user_id_from_token,
+        session: db_dependency,
 ) -> DeleteReservationResponse:
     if current_user_id is None:
         raise HTTPException(
@@ -242,9 +279,9 @@ def delete_reservation(
             detail='You are not authenticated as a user',
         )
     if (
-        reservation := get_reservation_from_id(
-            reservation_id=reservation_id, session=session
-        )
+            reservation := get_reservation_from_id(
+                reservation_id=reservation_id, session=session
+            )
     ) is None:
         raise HTTPException(status_code=404, detail='Reservation not found')
     if current_user_id != reservation.user_id:

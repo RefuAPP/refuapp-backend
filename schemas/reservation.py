@@ -1,6 +1,7 @@
-from pydantic import BaseModel, model_validator, Field
 from datetime import datetime
 from typing import List
+
+from pydantic import BaseModel, model_validator, Field
 
 
 class Date(BaseModel):
@@ -26,6 +27,15 @@ class Reservation(BaseModel):
 
 class ReservationWithId(Reservation):
     id: str
+
+
+class DayReservations(BaseModel):
+    date: Date
+    count: int
+
+
+class WeekReservations(BaseModel):
+    reservations: List[DayReservations] = Field(min_items=7, max_items=7)
 
 
 Reservations = List[ReservationWithId]
