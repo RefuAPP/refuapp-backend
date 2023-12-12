@@ -15,7 +15,7 @@ from schemas.reservation import (
 
 
 def save_reservation(
-        reservation: schemas.reservation.Reservation, db: Session
+    reservation: schemas.reservation.Reservation, db: Session
 ) -> CreateReservationResponse:
     new_reservation = Reservation(
         refuge_id=reservation.refuge_id,
@@ -40,14 +40,14 @@ def save_reservation(
 
 
 def get_reservation_from_id(
-        reservation_id: str, session: Session
+    reservation_id: str, session: Session
 ) -> schemas.reservation.Reservation | None:
     if (
-            reservation_with_id := (
-                    session.query(Reservation)
-                            .filter(Reservation.id == reservation_id)
-                            .first()
-            )
+        reservation_with_id := (
+            session.query(Reservation)
+            .filter(Reservation.id == reservation_id)
+            .first()
+        )
     ) is None:
         return None
     return schemas.reservation.Reservation(
@@ -69,7 +69,7 @@ def get_reservations_by_user(user_id: str, session: Session) -> Reservations:
 
 
 def get_reservations_by_refuge_and_user(
-        refuge_id: str, user_id: str, session: Session
+    refuge_id: str, user_id: str, session: Session
 ) -> Reservations:
     reservations = (
         session.query(Reservation)
@@ -99,7 +99,7 @@ def convert_model_to_schema(reservations: List[Reservation]) -> Reservations:
 
 
 def get_reservations_for_refuge_and_date(
-        refuge_id: str, date: Date, session: Session
+    refuge_id: str, date: Date, session: Session
 ) -> Reservations:
     reservations: List[Reservation] = (
         session.query(Reservation)
@@ -112,28 +112,30 @@ def get_reservations_for_refuge_and_date(
     return convert_model_to_schema(reservations)
 
 
-def get_days_for_week(date: Date, offset: int) -> List[Date]:
+def get_dates_for_week(date: Date, offset: int) -> List[Date]:
     input_datetime = datetime.strptime(
-        f"{date.year}-{date.month}-{date.date}", "%Y-%m-%d"
+        f"{date.year}-{date.month}-{date.day}", "%Y-%m-%d"
     )
     start_of_week = input_datetime - timedelta(days=input_datetime.weekday())
     target_week_start = start_of_week + timedelta(weeks=offset)
     week_days = [target_week_start + timedelta(days=i) for i in range(7)]
-    formatted_days = [Date(day=day.day, month=day.month, year=day.year) for day in week_days]
+    formatted_days = [
+        Date(day=day.day, month=day.month, year=day.year) for day in week_days
+    ]
     return formatted_days
 
 
 def user_has_reservation_on_date(
-        user_id: str, night: Date, session: Session
+    user_id: str, night: Date, session: Session
 ) -> bool:
     return (
-            session.query(Reservation)
-            .filter(Reservation.user_id == user_id)
-            .filter(Reservation.day == night.day)
-            .filter(Reservation.month == night.month)
-            .filter(Reservation.year == night.year)
-            .first()
-            is not None
+        session.query(Reservation)
+        .filter(Reservation.user_id == user_id)
+        .filter(Reservation.day == night.day)
+        .filter(Reservation.month == night.month)
+        .filter(Reservation.year == night.year)
+        .first()
+        is not None
     )
 
 

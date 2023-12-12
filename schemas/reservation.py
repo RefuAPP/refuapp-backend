@@ -35,7 +35,7 @@ class DayReservations(BaseModel):
 
 
 class WeekReservations(BaseModel):
-    reservations: List[DayReservations] = Field(min_items=7, max_items=7)
+    reservations: List[DayReservations] = Field(min_length=7, max_length=7)
 
 
 Reservations = List[ReservationWithId]
