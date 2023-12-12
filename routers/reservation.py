@@ -190,7 +190,7 @@ def get_reservations_for_refuge_in_date(
 
 
 @router.get(
-    "/refuge/{refuge_id}/week/{year}/month/{month}/day/{day}/",
+    "/refuge/{refuge_id}/week/year/{year}/month/{month}/day/{day}/",
     status_code=status.HTTP_200_OK,
     response_model=WeekReservations,
     responses={
