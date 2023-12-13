@@ -6,9 +6,12 @@ from starlette.responses import RedirectResponse
 import models
 from models.database import engine
 from models.database import engine
-from populate import create_admin, create_default_sensor_refuge, create_supervisor
-from routers import auth, users, refuges, reservation
-from routers import images
+from populate import (
+    create_admin,
+    create_default_sensor_refuge,
+    create_supervisor,
+)
+from routers import auth, users, refuges, reservation, images, data
 
 app = FastAPI(
     title="RefuApp API",
@@ -23,6 +26,7 @@ app.include_router(users.router)
 app.include_router(refuges.router)
 app.include_router(images.router)
 app.include_router(reservation.router)
+app.include_router(data.router)
 app.router.redirect_slashes = False
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

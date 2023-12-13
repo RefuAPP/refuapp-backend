@@ -25,6 +25,7 @@ from services.auth import (
     get_supervisor_id_from_token,
     get_token_data,
 )
+from services.csv import create_csv_from_reservations_list
 from services.refuges import find_by_id
 from services.reservation import (
     save_reservation,
@@ -296,3 +297,30 @@ def delete_reservation(
         user_id=reservation.user_id,
         night=reservation.night,
     )
+
+
+@router.get(
+    "/refuge/{refuge_id}/week/year/{year}/month/{month}/day/{day}/data",
+    status_code=status.HTTP_200_OK,
+    response_model=str,
+    responses={
+        **NOT_FOUND_RESPONSE,
+    },
+)
+def get_data_path_for_reservations_in_week(
+    refuge_id: str,
+    year: int,
+    month: int,
+    day: int,
+    session: db_dependency,
+    offset: int,
+) -> str:
+    reservation_list = get_reservations_for_refuge_in_week(
+        refuge_id=refuge_id,
+        year=year,
+        month=month,
+        day=day,
+        session=session,
+        offset=offset,
+    )
+    return create_csv_from_reservations_list(reservation_list)
