@@ -15,6 +15,7 @@ from models.supervisors import Supervisors
 from schemas.refuge import CreateRefugeRequest, Coordinates, Capacity
 from security.security import get_password_hash
 from services.refuges import create_refuge
+from models.refuges import Refuges
 
 LONGITUDE_INDEX = 0
 LATITUDE_INDEX = 1
@@ -255,9 +256,38 @@ def create_supervisor():
         db.add(supervisor)
         db.commit()
         db.refresh(supervisor)
-
+        
+def create_default_sensor_refuge():
+    db = next(get_db())
+    default_refuge_id = "d4504a10-9fe9-4006-aae6-2a399cd5a286"
+    if (
+        db.query(Refuges).filter_by(id=default_refuge_id).first()
+        is None
+    ):
+        new_refuge = Refuges(
+            id=default_refuge_id,
+            name="RefuApp",
+            region="Lleida",
+            altitude=1,
+            coordinates_latitude=41.610897,
+            coordinates_longitude=0.626156,
+            capacity_winter=100,
+            capacity_summer=160,
+            image="static/images/refuges/image2.jpg"
+        )
+        try:
+            db.add(new_refuge)
+            db.commit()
+            db.refresh(new_refuge)
+            print(f"Refugio '{new_refuge.name}' creado con éxito con ID: {new_refuge.id}")
+        except Exception as e:
+            print(f"Error al crear el refugio: {e}")
+        finally:
+            db.close()
 
 if __name__ == '__main__':
     populate_db_with_refuges()
     create_admin()
     create_supervisor()
+    create_default_sensor_refuge()
+    
