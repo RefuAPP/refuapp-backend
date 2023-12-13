@@ -34,10 +34,6 @@ class DayReservations(BaseModel):
     count: int
 
 
-class WeekReservations(BaseModel):
-    reservations: List[DayReservations] = Field(min_length=7, max_length=7)
-
-
 Reservations = List[ReservationWithId]
 
 

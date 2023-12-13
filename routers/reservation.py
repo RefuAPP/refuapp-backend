@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Security
@@ -17,7 +18,6 @@ from schemas.reservation import (
     Date,
     Reservations,
     DeleteReservationResponse,
-    WeekReservations,
     DayReservations,
 )
 from services.auth import (
@@ -38,7 +38,6 @@ from services.reservation import (
     get_dates_for_week,
 )
 from services.user import get_user_from_id, get_supervisor_from_id
-from datetime import date
 
 router = APIRouter(
     prefix="/reservations",
@@ -192,7 +191,7 @@ def get_reservations_for_refuge_in_date(
 @router.get(
     "/refuge/{refuge_id}/week/year/{year}/month/{month}/day/{day}/",
     status_code=status.HTTP_200_OK,
-    response_model=WeekReservations,
+    response_model=list[DayReservations],
     responses={
         **NOT_FOUND_RESPONSE,
     },
@@ -204,7 +203,7 @@ def get_reservations_for_refuge_in_week(
     day: int,
     session: db_dependency,
     offset: int,
-) -> WeekReservations:
+) -> list[DayReservations]:
     if find_by_id(refuge_id=refuge_id, db=session) is None:
         raise HTTPException(status_code=404, detail='Refuge not found')
     reservation_day = Date(day=day, month=month, year=year)
@@ -221,7 +220,7 @@ def get_reservations_for_refuge_in_week(
                 ),
             )
         )
-    return WeekReservations(reservations=week_reservations_list)
+    return week_reservations_list
 
 
 @router.get(
