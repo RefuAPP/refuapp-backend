@@ -11,10 +11,10 @@ router = APIRouter(
 
 
 @router.get(
-    "/",
+    "/{file_path}",
     status_code=status.HTTP_200_OK,
     response_class=FileResponse,
     responses={**NOT_FOUND_RESPONSE},
 )
-def get_csv_file(file_name: str):
-    return FileResponse(f"{CSV_DATA_DIR}{file_name}")
+def get_csv_file(file_path: str):
+    return FileResponse(f"{CSV_DATA_DIR}{file_path}")
