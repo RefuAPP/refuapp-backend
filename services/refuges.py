@@ -1,6 +1,11 @@
+import logging
 from typing import Optional
 
 from sqlalchemy.orm import Session
+
+import firebase_admin  # type: ignore
+
+from firebase_admin import credentials, messaging  # type: ignore
 
 from configuration.config import Configuration
 from configuration.image import DefaultImage
@@ -16,6 +21,8 @@ from schemas.refuge import (
     DeleteRefugeResponse,
 )
 from services.images import delete_image
+
+CREATE_REFUGE_TOPIC = 'create_refuge'
 
 
 # TODO: Check for admin rights, only admin can create refuges
@@ -37,8 +44,7 @@ def create_refuge(
     db.add(new_refuge)
     db.commit()
     db.refresh(new_refuge)
-
-    return CreateRefugeResponse(
+    refuge_response = CreateRefugeResponse(
         id=new_refuge.id,
         name=new_refuge.name,
         image=new_refuge.image,
@@ -53,6 +59,18 @@ def create_refuge(
             summer=new_refuge.capacity_summer,
         ),
     )
+    firebase_cred = credentials.Certificate("firebase-admin-sdk.json")
+    firebase_admin.initialize_app(firebase_cred)
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title='New refuge created',
+            body=f'Refuge {refuge_response.name} created in {refuge_response.region}',
+        ),
+        topic=CREATE_REFUGE_TOPIC,
+    )
+    id_notification = messaging.send(message)
+    print(f"Notification with id {id_notification} sent")
+    return refuge_response
 
 
 def get_refuge(refuge: Refuges) -> GetRefugeResponse:

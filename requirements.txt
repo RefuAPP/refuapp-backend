@@ -21,3 +21,4 @@ types-Pillow
 types-requests
 requests
 ntplib
+firebase-admin
