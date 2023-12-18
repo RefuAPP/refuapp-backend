@@ -59,8 +59,6 @@ def create_refuge(
             summer=new_refuge.capacity_summer,
         ),
     )
-    firebase_cred = credentials.Certificate("firebase-admin-sdk.json")
-    firebase_admin.initialize_app(firebase_cred)
     message = messaging.Message(
         notification=messaging.Notification(
             title='New refuge created',

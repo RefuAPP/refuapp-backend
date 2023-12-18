@@ -1,5 +1,7 @@
+import firebase_admin  # type: ignore
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from firebase_admin import credentials  # type: ignore
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
@@ -30,6 +32,9 @@ app.include_router(data.router)
 app.router.redirect_slashes = False
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+firebase_cred = credentials.Certificate("firebase-admin-sdk.json")
+firebase_admin.initialize_app(firebase_cred)
 
 app.add_middleware(
     CORSMiddleware,
